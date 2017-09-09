@@ -3,6 +3,7 @@ let mapFunctions = {}
 let objAvoided = []
 let elementAvoided = []
 let keyPressed = false
+let nbBinds = 0
 
 function isTrue(property) {
   return property === true;
@@ -10,6 +11,35 @@ function isTrue(property) {
 
 function bindingValueToKey(binding) {
   return (typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value).join('')
+}
+
+function eventKeydown(pKey) {
+  const decodedKey = ShortKey.decodeKey(pKey)
+
+  // Check evict
+  if (filteringElement(pKey)) {
+    pKey.preventDefault()
+    pKey.stopPropagation()
+    if (mapFunctions[decodedKey].fn) {
+      ShortKey.keyDown(decodedKey)
+      keyPressed = true
+    } else if (!keyPressed) {
+      mapFunctions[decodedKey].el.focus()
+      keyPressed = true
+    }
+  }
+}
+
+function eventKeyup(pKey) {
+  const decodedKey = ShortKey.decodeKey(pKey)
+  if (filteringElement(pKey)) {
+    pKey.preventDefault()
+    pKey.stopPropagation()
+    if (mapFunctions[decodedKey].oc || mapFunctions[decodedKey].ps) {
+      ShortKey.keyUp(decodedKey)
+    }
+  }
+  keyPressed = false
 }
 
 ShortKey.directive = {
@@ -23,6 +53,11 @@ ShortKey.directive = {
         'fn': !isTrue(binding.modifiers.focus),
         'el': vnode.elm
       }
+      nbBinds += 1
+      if (nbBinds == 1) {
+        document.addEventListener('keydown', eventKeydown, true)
+        document.addEventListener('keyup', eventKeyup, true)
+      }
     }
   },
   unbind: (el, binding) => {
@@ -32,8 +67,14 @@ ShortKey.directive = {
       })
     } else {
       let k = bindingValueToKey(binding)
-      if (mapFunctions[k].el === el)
+      if (mapFunctions[k].el === el) {
         delete mapFunctions[k]
+        nbBinds -= 1
+        if (nbBinds == 0) {
+          document.removeEventListener('keydown', eventKeydown)
+          document.removeEventListener('keyup', eventKeyup)
+        }
+      }
     }
   }
 }
@@ -77,39 +118,6 @@ ShortKey.keyUp = (pKey) => {
   const e = document.createEvent('HTMLEvents')
   e.initEvent('shortkey', true, true)
   mapFunctions[pKey].el.dispatchEvent(e)
-}
-
-if (process.env.NODE_ENV !== 'test') {
-  ;(function () {
-    document.addEventListener('keydown', (pKey) => {
-      const decodedKey = ShortKey.decodeKey(pKey)
-
-      // Check evict
-      if (filteringElement(pKey)) {
-        pKey.preventDefault()
-        pKey.stopPropagation()
-        if (mapFunctions[decodedKey].fn) {
-          ShortKey.keyDown(decodedKey)
-          keyPressed = true
-        } else if (!keyPressed) {
-          mapFunctions[decodedKey].el.focus()
-          keyPressed = true
-        }
-      }
-    }, true)
-
-    document.addEventListener('keyup', (pKey) => {
-      const decodedKey = ShortKey.decodeKey(pKey)
-      if (filteringElement(pKey)) {
-        pKey.preventDefault()
-        pKey.stopPropagation()
-        if (mapFunctions[decodedKey].oc || mapFunctions[decodedKey].ps) {
-          ShortKey.keyUp(decodedKey)
-        }
-      }
-      keyPressed = false
-    }, true)
-  })()
 }
 
 const filteringElement = (pKey) => {

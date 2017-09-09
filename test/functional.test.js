@@ -26,6 +26,35 @@ function createEvent(name='keydown') {
   return event
 }
 
+describe('unit test', () => {
+  describe('directive', () => {
+    beforeEach(() => {
+      sinon.spy(document, 'addEventListener')
+    })
+
+    afterEach(() => {
+      document.addEventListener.restore()
+    })
+
+    it('Listen for keydown and keyup event on bind', () => {
+      const div = document.createElement('div')
+      Shortkey.directive.bind(div, {value: "['a']", modifiers: {}}, {elm: div})
+      expect(document.addEventListener.calledTwice).to.be.true
+      Shortkey.directive.unbind(div, {value: "['a']", modifiers: {}}, {elm: div})
+    })
+
+    it('Listen for keydown and keyup event on bind only one time', () => {
+      const div1 = document.createElement('div')
+      const div2 = document.createElement('div')
+      Shortkey.directive.bind(div1, {value: "['a']", modifiers: {}}, {elm: div1})
+      Shortkey.directive.bind(div2, {value: "['b']", modifiers: {}}, {elm: div2})
+      expect(document.addEventListener.calledTwice).to.be.true
+      Shortkey.directive.unbind(div1, {value: "['a']", modifiers: {}}, {elm: div1})
+      Shortkey.directive.unbind(div2, {value: "['b']", modifiers: {}}, {elm: div2})
+    })
+  })
+})
+
 describe('functionnal tests', () => {
   it('listen for keydown and dispatch event', () => {
     const div = document.createElement('div')
