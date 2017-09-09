@@ -4,34 +4,28 @@ let objAvoided = []
 let elementAvoided = []
 let keyPressed = false
 
+function isTrue(property) {
+  return property === true;
+}
+
 ShortKey.directive = {
   bind: (el, binding, vnode) => {
-    // Mapping the commands
-    let b = typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value
-    let persistent = binding.modifiers.persistent === true
-    let pushButton = binding.modifiers.push === true
-    let avoid = binding.modifiers.avoid === true
-    let focus = binding.modifiers.focus === true
-    let once = binding.modifiers.once === true
-    if (pushButton) { delete b.push }
-    if (avoid) {
+    if (isTrue(binding.modifiers.avoid)) {
       objAvoided.push(el)
     } else {
+      let b = typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value
       let k = b.join('')
       mapFunctions[k] = {
-        'pr': persistent,
-        'ps': pushButton,
-        'oc': once,
-        'fn': !focus,
+        'pr': isTrue(binding.modifiers.persistent),
+        'ps': isTrue(binding.modifiers.push),
+        'oc': isTrue(binding.modifiers.once),
+        'fn': !isTrue(binding.modifiers.focus),
         'el': vnode.elm
       }
     }
   },
   unbind: (el, binding) => {
-    let b = []
-    b = typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value
-    let pushButton = binding.modifiers.push === true
-    if (pushButton) { delete b.push }
+    let b = typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value
     if (b) {
       let k = b.join('')
       if (mapFunctions[k].el === el) delete mapFunctions[k]
