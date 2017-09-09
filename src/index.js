@@ -8,14 +8,16 @@ function isTrue(property) {
   return property === true;
 }
 
+function bindingValueToKey(binding) {
+  return (typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value).join('')
+}
+
 ShortKey.directive = {
   bind: (el, binding, vnode) => {
     if (isTrue(binding.modifiers.avoid)) {
       objAvoided.push(el)
     } else {
-      let b = typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value
-      let k = b.join('')
-      mapFunctions[k] = {
+      mapFunctions[bindingValueToKey(binding)] = {
         'ps': isTrue(binding.modifiers.push),
         'oc': isTrue(binding.modifiers.once),
         'fn': !isTrue(binding.modifiers.focus),
@@ -29,9 +31,9 @@ ShortKey.directive = {
         return !itm === el;
       })
     } else {
-      let b = typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value
-      let k = b.join('')
-      if (mapFunctions[k].el === el) delete mapFunctions[k]
+      let k = bindingValueToKey(binding)
+      if (mapFunctions[k].el === el)
+        delete mapFunctions[k]
     }
   }
 }
