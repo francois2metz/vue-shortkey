@@ -16,7 +16,6 @@ ShortKey.directive = {
       let b = typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value
       let k = b.join('')
       mapFunctions[k] = {
-        'pr': isTrue(binding.modifiers.persistent),
         'ps': isTrue(binding.modifiers.push),
         'oc': isTrue(binding.modifiers.once),
         'fn': !isTrue(binding.modifiers.focus),
