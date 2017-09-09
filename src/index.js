@@ -24,15 +24,15 @@ ShortKey.directive = {
     }
   },
   unbind: (el, binding) => {
-    let b = typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value
-    if (b) {
+    if (isTrue(binding.modifiers.avoid)) {
+      objAvoided = objAvoided.filter((itm) => {
+        return !itm === el;
+      })
+    } else {
+      let b = typeof binding.value === 'string' ? JSON.parse(binding.value.replace(/\'/gi, '"')) : binding.value
       let k = b.join('')
       if (mapFunctions[k].el === el) delete mapFunctions[k]
     }
-
-    objAvoided = objAvoided.filter((itm) => {
-      return !itm === el;
-    })
   }
 }
 
